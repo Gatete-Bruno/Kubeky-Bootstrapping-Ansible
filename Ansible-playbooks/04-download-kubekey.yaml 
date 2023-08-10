@@ -1,0 +1,14 @@
+- hosts: master
+  become: yes
+  become_user: root
+  remote_user: root
+  become_method: sudo
+  gather_facts: no
+  vars:
+    ansible_become_pass: " "
+  tasks:
+    - name: "Download kubekey"
+      shell: |
+              curl -sfL https://get-kk.kubesphere.io | VERSION=v3.0.2 sh -
+              chmod +x kk
+              ./kk create config --with-kubernetes v1.23.10

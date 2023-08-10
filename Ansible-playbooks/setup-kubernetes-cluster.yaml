@@ -1,0 +1,18 @@
+---
+# - name: Add all nodes to known hosts
+#   import_playbook: 00-add-to-ssh-known-hosts.yaml
+
+- name: Update nodes
+  import_playbook: 01-update-servers.yaml
+
+- name: Install required modules
+  import_playbook: 02-install-requirements.yaml
+
+- name: Disable swap on all nodes
+  import_playbook: 03-disable-swap.yaml
+
+- name: Download & setup kubekey
+  import_playbook: 04-download-kubekey.yaml
+
+- name: Install k8
+  import_playbook: 05-install-kubernetes.yaml

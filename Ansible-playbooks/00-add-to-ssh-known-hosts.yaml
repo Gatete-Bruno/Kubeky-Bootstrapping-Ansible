@@ -1,0 +1,20 @@
+-   hosts: 127.0.0.1
+    connection: local
+    gather_facts: no
+    become: no
+    tasks:
+        -   name: Setup Known Hosts With Port
+            known_hosts:
+                key: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + lookup('config', 'DEFAULT_REMOTE_PORT') | string + ' ' + item.value.inventory_hostname) }}"
+                name: "{{ item.value.inventory_hostname }}"
+                state: present
+            when: lookup('config', 'DEFAULT_REMOTE_PORT') | string != "None"
+            with_items: "{{ hostvars | dict2items }}"
+
+        -   name: Setup Known Hosts Without Port
+            known_hosts:
+                key: "{{ lookup('pipe', 'ssh-keyscan -trsa ' + item.value.inventory_hostname) }}"
+                name: "{{ item.value.inventory_hostname }}"
+                state: present
+            when: lookup('config', 'DEFAULT_REMOTE_PORT') | string == "None"
+            with_items: "{{ hostvars | dict2items }}"

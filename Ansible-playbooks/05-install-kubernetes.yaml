@@ -1,0 +1,19 @@
+- hosts: master
+  become: yes
+  become_user: root
+  remote_user: root
+  become_method: sudo
+  gather_facts: no
+  vars:
+    ansible_become_pass: " "
+  tasks:
+    - name: Copying configuration file to server
+      become: true
+      copy:
+        src: /Users/bruno/infra/vm-boxs/config-sample.yaml
+        dest: ~/
+        owner: root
+        group: root
+    - name: "Install k8 cluster"
+      shell: |
+              ./kk create cluster -f ~/config-sample.yaml -y

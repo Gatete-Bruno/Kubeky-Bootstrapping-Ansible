@@ -1,0 +1,15 @@
+- hosts: all
+  become: yes
+  become_user: root
+  remote_user: root
+  become_method: sudo
+  gather_facts: no
+  vars:
+    ansible_become_pass: " "
+
+
+  tasks:
+    - name: "Install required components"
+      shell: |
+              apt install htop byobu net-tools ebtables ipset open-iscsi -y
+              apt install conntrack socat -y
