@@ -1,0 +1,17 @@
+- hosts: init_server
+  become: yes
+  become_user: root
+  remote_user: root
+  become_method: sudo
+  gather_facts: no
+  tasks:
+    - name: Copying configuration file to server
+      become: true 
+      copy:
+        src: /cluster-config-updated-nodes.yaml
+        dest: ~/
+        owner: root
+        group: root
+    - name: "Upgrading kubernetes cluster nodes version"
+      shell: |
+             yes | ./kk upgrade --with-kubernetes v1.23.5  -f cluster-config-updated-nodes.yaml -y
