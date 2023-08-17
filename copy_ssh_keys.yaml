@@ -1,0 +1,12 @@
+---
+- hosts: all
+  vars:
+    target_user: kato
+
+  tasks:
+    - name: Copy SSH public key to remote hosts
+      authorized_key:
+        user: "{{ target_user }}"
+        key: "{{ lookup('file', '/Users/bruno/.ssh/id_rsa.pub') }}"
+        state: present
+

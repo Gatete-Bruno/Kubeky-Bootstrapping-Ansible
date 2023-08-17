@@ -1,0 +1,20 @@
+---
+- hosts: master
+  become: yes
+  become_user: root
+  remote_user: root
+  become_method: sudo
+  gather_facts: no
+  vars:
+    ansible_become_pass: " "
+  tasks: 
+    - name: Copying configuration file to server
+      become: true 
+      copy:
+        src: ./cluster-config-updated-nodes.yaml
+        dest: ~/
+        owner: root
+        group: root
+    - name: "Updating cluster nodes"
+      shell: |
+              ./kk add nodes -f cluster-config-updated-nodes.yaml -y

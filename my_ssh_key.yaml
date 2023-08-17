@@ -1,0 +1,32 @@
+---
+- hosts: all
+  vars_prompt:
+    - name: ansible_become_pass
+      prompt: "Enter the sudo password for {{ target_user }}: "
+      private: yes
+
+  vars:
+    target_user: kato
+    ansible_become_pass: " "
+
+  tasks:
+    - name: Copy SSH public key to authorized_keys
+      authorized_key:
+        user: "{{ target_user }}"
+        key: "{{ lookup('file', '/Users/bruno/.ssh/id_rsa.pub') }}"
+        state: present
+
+    - name: Set correct permissions for .ssh directory
+      file:
+        path: "/home/{{ target_user }}/.ssh"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        mode: "0700"
+
+    - name: Set correct permissions for authorized_keys file
+      file:
+        path: "/home/{{ target_user }}/.ssh/authorized_keys"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        mode: "0600"
+
