@@ -1,11 +1,8 @@
+---
 - hosts: all
   become: yes
-  become_user: root
-  remote_user: root
-  become_method: sudo
+  remote_user: kato
   gather_facts: no
-  vars:
-    ansible_become_pass: " "
   tasks:
   - name: "Disable swap"
     shell: |

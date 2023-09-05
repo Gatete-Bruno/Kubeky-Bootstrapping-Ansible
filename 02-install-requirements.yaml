@@ -1,17 +1,18 @@
+---
 - hosts: all
-  become: yes
-  become_user: root
-  remote_user: root
-  become_method: sudo
-  gather_facts: no
-  vars:
-    ansible_become_pass: " "
+  remote_user: kato
+  become: yes  # Add this line to run tasks with elevated privileges
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - htop
+          - byobu
+          - net-tools
+          - ebtables
+          - ipset
+          - open-iscsi
+          - conntrack
+          - socat
+        state: present
 
-
-  tasks: 
-    - name: "Install required components"
-      shell: |
-              apt install htop byobu net-tools ebtables ipset open-iscsi -y
-              apt install conntrack socat -y
-
-              
