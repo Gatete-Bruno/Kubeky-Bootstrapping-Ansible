@@ -1,6 +1,7 @@
 ---
 - hosts: all
   remote_user: kato
+  become: yes  # Add this line to run tasks with elevated privileges
   tasks:
     - name: "Update Repository cache"
       apt:
