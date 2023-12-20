@@ -1,0 +1,22 @@
+---
+- name: Update, Upgrade, and Reboot
+  hosts: all
+  remote_user: kato
+  become: yes  # Run tasks with sudo privileges
+
+  tasks:
+    - name: Task 1 - Update Package List
+      apt:
+        update_cache: yes
+
+    - name: Task 2 - Upgrade Packages
+      apt:
+        upgrade: yes
+        autoclean: yes
+        autoremove: yes
+
+    - name: Task 3 - Reboot
+      command: reboot
+      async: 0
+      poll: 0
+      ignore_errors: true  # Ignore errors since the reboot will disconnect Ansible
