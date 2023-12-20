@@ -7,10 +7,10 @@
     - name: Copying configuration file to server
       become: true
       copy:
-        src: /Users/bruno/infra/vm-boxs/config-sample.yaml #This path is subjective to your environment 
-        dest: ~/
+        src: /Users/bruno/infra/chaos-engineering/Kubeky-Bootstrapping-Ansible/config-sample.yaml #This path is subjective to your environment 
+        dest: /home/kato
         owner: kato
         group: sudo
     - name: "Install k8 cluster"
       shell: |
-              ./kk create cluster -f ~/config-sample.yaml -y
+              ./kk create cluster -f /home/kato/config-sample.yaml -y
