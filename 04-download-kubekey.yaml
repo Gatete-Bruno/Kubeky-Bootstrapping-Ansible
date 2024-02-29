@@ -2,9 +2,15 @@
   become: yes
   remote_user: kato
   gather_facts: no
-  tasks: 
+  tasks:
     - name: "Download kubekey"
       shell: |
-              curl -sfL https://get-kk.kubesphere.io | VERSION=v3.0.2 sh -
-              chmod +x kk
-              ./kk create config --with-kubernetes v1.23.10
+        if [ ! -f "kk" ]; then
+          curl -sfL https://get-kk.kubesphere.io | VERSION=v3.0.2 sh -
+          chmod +x kk
+          ./kk create config --with-kubernetes v1.23.10
+        else
+          echo "kk already exists. Skipping download and configuration."
+        fi
+      args:
+        creates: "kk"

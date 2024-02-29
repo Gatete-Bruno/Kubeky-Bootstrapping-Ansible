@@ -4,9 +4,9 @@ metadata:
   name: sample
 spec:
   hosts:
-  - {name: master1, address: 192.168.20.71, internalAddress: 192.168.20.71, user: kato, password: " "  }
-  - {name: node1, address: 192.168.20.72, internalAddress: 192.168.20.72, user: kato, password: " "}
-  - {name: node2, address: 192.168.20.73, internalAddress: 192.168.20.73, user: kato, password: " "}
+  - {name: master1, address: 192.168.1.60, internalAddress: 192.168.1.60, user: kato, password: " "  }
+  - {name: node1, address: 192.168.1.61, internalAddress: 192.168.1.61, user: kato, password: " "}
+  - {name: node2, address: 192.168.1.62, internalAddress: 192.168.1.62, user: kato, password: " "}
   roleGroups:
     etcd:
     - master1

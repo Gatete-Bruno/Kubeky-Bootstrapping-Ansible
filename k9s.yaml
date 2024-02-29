@@ -1,0 +1,20 @@
+---
+- name: Install k9s using Helm
+  hosts: all
+  remote_user: kato 
+  become: yes
+  gather_facts: false
+
+  tasks:
+    - name: Add Helm repository for k9s
+      community.general.helm_repository:
+        name: k9s-repo
+        repo_url: https://charts.bitnami.com/bitnami
+        state: present
+
+    - name: Install k9s Helm chart
+      community.general.helm:
+        name: k9s
+        chart_ref: bitnami/k9s
+        release_namespace: k9s
+        state: present

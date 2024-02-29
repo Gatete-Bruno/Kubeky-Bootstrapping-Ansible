@@ -7,7 +7,7 @@
     - name: Copying configuration file to server
       become: true
       copy:
-        src: /Users/bruno/infra/vm-boxs/config-sample.yaml #This path is subjective to your environment 
+        src: /Users/bruno/infra/cloud-devops/Kubeky-Bootstrapping-Ansible/config-sample.yaml #This path is subjective to your environment 
         dest: ~/
         owner: kato
         group: sudo
