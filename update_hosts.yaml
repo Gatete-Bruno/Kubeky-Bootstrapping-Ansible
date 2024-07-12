@@ -1,0 +1,11 @@
+---
+- name: Update /etc/hosts file
+  hosts: all
+  remote_user: kato  # Set the SSH user to 'kato'
+  become: yes
+  tasks:
+    - name: Ensure /etc/hosts contains entry for myapp.local
+      lineinfile:
+        path: /etc/hosts
+        line: "127.0.0.1 myapp.local"
+        state: present
