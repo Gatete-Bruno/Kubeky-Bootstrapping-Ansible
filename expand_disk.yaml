@@ -1,0 +1,27 @@
+---
+- hosts: all
+  remote_user: kato
+  tasks:
+    - name: Check disk space before
+      shell: df -h
+      register: disk_before
+    
+    - name: Display disk before
+      debug:
+        msg: "{{ disk_before.stdout }}"
+    
+    - name: Grow partition
+      shell: sudo growpart /dev/sda 1
+      ignore_errors: yes
+    
+    - name: Resize filesystem
+      shell: sudo resize2fs /dev/sda1
+      ignore_errors: yes
+    
+    - name: Check disk space after
+      shell: df -h
+      register: disk_after
+    
+    - name: Display disk after
+      debug:
+        msg: "{{ disk_after.stdout }}"

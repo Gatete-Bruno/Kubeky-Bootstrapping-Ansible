@@ -1,18 +1,22 @@
 ---
-# - name: Add all nodes to known hosts
-#   import_playbook: 00-add-to-ssh-known-hosts.yaml
+# setup-kubernetes-cluster.yaml - Main orchestration playbook
+- name: Add all nodes to known hosts
+  import_playbook: 00-add-to-ssh-known-hosts.yaml
 
-- name: Update nodes
+- name: Setup SSH keys for inter-node communication
+  import_playbook: 001-setup-ssh-keys.yaml
+
+- name: Update system packages
   import_playbook: 01-update-servers.yaml
 
-- name: Install required modules
+- name: Install required packages
   import_playbook: 02-install-requirements.yaml
 
 - name: Disable swap on all nodes
   import_playbook: 03-disable-swap.yaml
 
-- name: Download & setup kubekey
+- name: Download and setup KubeKey
   import_playbook: 04-download-kubekey.yaml
 
-- name: Install k8
+- name: Install Kubernetes cluster
   import_playbook: 05-install-kubernetes.yaml

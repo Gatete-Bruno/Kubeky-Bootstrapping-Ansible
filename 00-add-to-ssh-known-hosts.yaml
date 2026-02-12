@@ -1,20 +1,40 @@
--   hosts: 127.0.0.1
-    connection: local
-    gather_facts: no
-    become: no
-    tasks:
-        -   name: Setup Known Hosts With Port
-            known_hosts:
-                key: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + lookup('config', 'DEFAULT_REMOTE_PORT') | string + ' ' + item.value.inventory_hostname) }}"
-                name: "{{ item.value.inventory_hostname }}"
-                state: present
-            when: lookup('config', 'DEFAULT_REMOTE_PORT') | string != "None"
-            with_items: "{{ hostvars | dict2items }}"
+# 00-add-to-ssh-known-hosts.yaml
+---
+- hosts: all
+  remote_user: kato
+  gather_facts: yes
+  tasks:
+    - name: Generate SSH key for kato if not exists
+      shell: |
+        if [ ! -f ~/.ssh/id_rsa ]; then
+          ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ''
+        fi
+      args:
+        creates: ~/.ssh/id_rsa
 
-        -   name: Setup Known Hosts Without Port
-            known_hosts:
-                key: "{{ lookup('pipe', 'ssh-keyscan -trsa ' + item.value.inventory_hostname) }}"
-                name: "{{ item.value.inventory_hostname }}"
-                state: present
-            when: lookup('config', 'DEFAULT_REMOTE_PORT') | string == "None"
-            with_items: "{{ hostvars | dict2items }}"
+    - name: Ensure .ssh directory has correct permissions
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: '0700'
+      
+    - name: Read public key
+      slurp:
+        src: ~/.ssh/id_rsa.pub
+      register: ssh_pub_keys
+
+    - name: Add SSH host keys to known_hosts
+      shell: |
+        ssh-keyscan -H {{ item }} >> ~/.ssh/known_hosts 2>/dev/null || true
+      with_items:
+        - 192.168.1.141
+        - 192.168.1.142
+        - 192.168.1.143
+        - 192.168.1.144
+        - 192.168.1.145
+      changed_when: false
+
+    - name: Set facts for public keys
+      set_fact:
+        node_pubkey: "{{ ssh_pub_keys.content | b64decode }}"
+

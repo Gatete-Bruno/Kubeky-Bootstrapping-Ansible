@@ -1,16 +1,85 @@
 ---
+# 05-install-kubernetes.yaml (FIXED)
 - hosts: master
   remote_user: kato
   become: yes
   gather_facts: no
   tasks:
-    - name: Copying configuration file to server
-      become: true
+    - name: Copy configuration file to master
       copy:
-        src: /Users/bruno/infra/cloud-devops/Kubeky-Bootstrapping-Ansible/config-sample.yaml #This path is subjective to your environment 
-        dest: ~/
+        src: config-sample.yaml
+        dest: /home/kato/config-sample.yaml
         owner: kato
-        group: sudo
-    - name: "Install k8 cluster"
+        group: kato
+        mode: '0644'
+    
+    - name: Update config with privateKeyPath
       shell: |
-              ./kk create cluster -f ~/config-sample.yaml -y
+        sed -i 's/password: "your_password"/privateKeyPath: "\/home\/kato\/.ssh\/id_rsa"/g' /home/kato/config-sample.yaml
+      become_user: kato
+    
+    - name: Ensure kubekey directory has proper ownership
+      file:
+        path: /home/kato/kubekey
+        state: directory
+        owner: kato
+        group: kato
+        mode: '0755'
+        recurse: yes
+    
+    - name: Install Kubernetes cluster
+      shell: |
+        cd /home/kato
+        ./kk create cluster -f /home/kato/config-sample.yaml -y 2>&1 | tee /home/kato/kk-install.log
+        exit ${PIPESTATUS[0]}
+      become_user: kato
+      register: kk_output
+      ignore_errors: yes
+      environment:
+        SSH_AUTH_SOCK: ""
+        SSH_AGENT_PID: ""
+      timeout: 1800
+      
+    - name: Display installation output
+      debug:
+        var: kk_output.stdout_lines
+    
+    - name: Check if installation was successful
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: admin_conf
+      
+    - name: Fail if Kubernetes not installed
+      fail:
+        msg: "Kubernetes installation failed. Check the output above and /home/kato/kk-install.log"
+      when: not admin_conf.stat.exists
+    
+    - name: Copy kubeconfig to kato user
+      shell: |
+        mkdir -p /home/kato/.kube
+        cp /etc/kubernetes/admin.conf /home/kato/.kube/config
+        chown -R kato:kato /home/kato/.kube
+      when: admin_conf.stat.exists
+      
+    - name: Install kubectl
+      shell: |
+        if [ ! -f /usr/local/bin/kubectl ]; then
+          curl -LO "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/
+        fi
+      args:
+        creates: /usr/local/bin/kubectl
+      when: admin_conf.stat.exists
+      become_user: kato
+    
+    - name: Verify kubectl works
+      shell: kubectl get nodes
+      become_user: kato
+      register: kubectl_check
+      when: admin_conf.stat.exists
+      
+    - name: Display cluster status
+      debug:
+        var: kubectl_check.stdout_lines
+      when: admin_conf.stat.exists

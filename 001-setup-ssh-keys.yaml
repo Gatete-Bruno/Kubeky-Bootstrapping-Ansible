@@ -1,0 +1,80 @@
+---
+- hosts: master
+  remote_user: kato
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Ensure .ssh directory exists on master
+      file:
+        path: /home/kato/.ssh
+        state: directory
+        owner: kato
+        group: kato
+        mode: '0700'
+    
+    - name: Generate SSH key on master if not exists
+      shell: |
+        if [ ! -f /home/kato/.ssh/id_rsa ]; then
+          ssh-keygen -t rsa -b 4096 -f /home/kato/.ssh/id_rsa -N ''
+          chown kato:kato /home/kato/.ssh/id_rsa*
+        fi
+      args:
+        creates: /home/kato/.ssh/id_rsa
+    
+    - name: Generate public key from private key
+      shell: |
+        if [ ! -f /home/kato/.ssh/id_rsa.pub ]; then
+          ssh-keygen -y -f /home/kato/.ssh/id_rsa > /home/kato/.ssh/id_rsa.pub
+          chmod 644 /home/kato/.ssh/id_rsa.pub
+          chown kato:kato /home/kato/.ssh/id_rsa.pub
+        fi
+      args:
+        creates: /home/kato/.ssh/id_rsa.pub
+
+- hosts: all
+  remote_user: kato
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Ensure .ssh directory exists on all nodes
+      file:
+        path: /home/kato/.ssh
+        state: directory
+        owner: kato
+        group: kato
+        mode: '0700'
+    
+    - name: Fetch master public key
+      slurp:
+        src: /home/kato/.ssh/id_rsa.pub
+      register: master_pub_key
+      run_once: yes
+      delegate_to: "{{ groups['master'][0] }}"
+      become_user: kato
+    
+    - name: Add master public key to all nodes
+      authorized_key:
+        user: kato
+        state: present
+        key: "{{ master_pub_key.content | b64decode }}"
+    
+    - name: Create SSH config for passwordless auth
+      blockinfile:
+        path: /home/kato/.ssh/config
+        create: yes
+        owner: kato
+        group: kato
+        mode: '0600'
+        block: |
+          Host 192.168.1.*
+              StrictHostKeyChecking no
+              UserKnownHostsFile=/dev/null
+    
+    - name: Create kubekey logs directory
+      file:
+        path: /home/kato/kubekey/logs
+        state: directory
+        owner: kato
+        group: kato
+        mode: '0755'
+        recurse: yes

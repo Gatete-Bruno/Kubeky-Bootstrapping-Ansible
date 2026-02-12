@@ -1,7 +1,8 @@
 ---
 - hosts: all
   remote_user: kato
-  become: yes  # Add this line to run tasks with elevated privileges
+  become: yes
+  gather_facts: no
   tasks:
     - name: Install required packages
       apt:
@@ -14,5 +15,5 @@
           - open-iscsi
           - conntrack
           - socat
+          - curl
         state: present
-
